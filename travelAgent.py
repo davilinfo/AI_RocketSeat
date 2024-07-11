@@ -90,19 +90,19 @@ def getResponse(query, llm):
 #print(getResponse(query=query, llm=llm).content)
 
 def lambda_handler(event,context):
-    #query = event.get("question")
+    query = event.get("question")
     
-    body = json.loads(event.get('body',{}))
-    query = body.get('question', 'question parameter is mandatory')
+    #body = json.loads(event.get('body',{}))
+    #query = body.get('question', 'question parameter is mandatory')
     response = getResponse(query=query, llm=llm)
     return {
-    #    "response": response,
-        "body": json.dumps({
-            "message":"Task successfully completed", 
-            "details":response
-        }), 
+        "response": response,
+    #    "body": json.dumps({
+    #        "message":"Task successfully completed", 
+    #        "details":response
+    #    }), 
         "statusCode":200, 
-        "headers":{
-            "Content-Type":"application/json"
-        }
+    #    "headers":{
+    #        "Content-Type":"application/json"
+    #    }
     }
