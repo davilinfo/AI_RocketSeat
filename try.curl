@@ -1,0 +1,3 @@
+curl -X POST "http://albapitravelagent-1676331059.us-east-1.elb.amazonaws.com" \
+-H "Content-Type: application/json"
+-d '{"question": "Vou viajar para Londres em Agosto de 2024. Quero que faça um roteiro de viagem para mim com eventos que irão ocorrer na data da viagem e com o preço de passagem de São Paulo para Londres"}'

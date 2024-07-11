@@ -10,12 +10,15 @@ from langchain_text_splitters.character import RecursiveCharacterTextSplitter
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnableSequence
 import bs4
+import json
 
+OPENAI_API_KEY = os.environ['OPENAI_API_KEY']
 llm = ChatOpenAI(model='gpt-3.5-turbo')
-query = """
-Vou viajar para Londres em Agosto de 2024. 
-Quero que faça um roteiro de viagem para mim com eventos que irão ocorrer na data da viagem e com o preço de passagem de São Paulo para Londres
-"""
+
+#query = """
+#Vou viajar para Londres em Agosto de 2024. 
+#Quero que faça um roteiro de viagem para mim com eventos que irão ocorrer na data da viagem e com o preço de passagem de São Paulo para Londres
+#"""
 
 def researchAgent(query, llm):    
     tools = load_tools(['ddg-search', 'wikipedia'], llm=llm)
@@ -23,7 +26,7 @@ def researchAgent(query, llm):
     #print(tools[1].name, tools[1].description)
     prompt = hub.pull("hwchase17/react")
     agent = create_react_agent(llm=llm,tools=tools, prompt=prompt)
-    executor = AgentExecutor(agent=agent,tools=tools,prompt=prompt, verbose=True)
+    executor = AgentExecutor(agent=agent,tools=tools,prompt=prompt)
     webContext = executor.invoke({"input":query})
     
     return webContext['output']
@@ -56,7 +59,7 @@ def loadData():
 def getRelevantDocs(query):
     retriever = loadData()
     relevant_documents = retriever.invoke(query)
-    print (relevant_documents)
+    #print (relevant_documents)
     return relevant_documents
 
 def supervisorAgent(query,llm,webContext,relevant_documents):
@@ -84,4 +87,22 @@ def getResponse(query, llm):
     response = supervisorAgent(query=query,llm=llm,webContext=webContext,relevant_documents=relevant_documents)
     return response
 
-print(getResponse(query=query, llm=llm).content)
+#print(getResponse(query=query, llm=llm).content)
+
+def lambda_handler(event,context):
+    #query = event.get("question")
+    
+    body = json.loads(event.get('body',{}))
+    query = body.get('question', 'question parameter is mandatory')
+    response = getResponse(query=query, llm=llm)
+    return {
+    #    "response": response,
+        "body": json.dumps({
+            "message":"Task successfully completed", 
+            "details":response
+        }), 
+        "statusCode":200, 
+        "headers":{
+            "Content-Type":"application/json"
+        }
+    }
